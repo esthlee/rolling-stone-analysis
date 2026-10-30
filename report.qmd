@@ -75,7 +75,7 @@ Before performing any data transformations, we inspect the raw structure and dim
 To answer our specific research question regarding the relationship between an artist's debut year, their 2020 ranking, gender, and group member count, we focus on the following key variables:
 
 | Variable Name | Data Type | Description & Domain |
-|:---------------------|:-----------------|:-------------------------------|
+|:---------------------|:------------------|:-------------------------------|
 | `rank_2020` | Integer | The primary outcome variable representing the album's rank on the 2020 list (1 to 500, where 1 represents the highest acclaim). |
 | `debut_album_release_year` | Integer | The year the artist released their very first debut album (proxy for career longevity). |
 | `artist_gender` | Categorical (Character) | The demographic classification of the primary artist (e.g., Male, Female, Male/Female). |
@@ -174,3 +174,82 @@ processed_obs_count <- nrow(rolling_stone_clean)
 ```
 
 After executing this processing pipeline, our refined dataset contains **`r processed_obs_count`** complete album observations ready for exploratory data analysis and visualisation.
+
+# Modeling / Analysis
+
+## Analytical Methods & Rationale
+
+To investigate our research question—**"Is there a measurable pattern or correlation between the year an artist debuted (`debut_album_release_year`) and their 2020 Rolling Stone album ranking (`rank_2020`), and how does this relationship vary across artist gender or group structure (`artist_type`)?"**—we employ a combination of descriptive summary statistics and exploratory data visualisations using `ggplot2`.
+
+Specifically, we utilize:
+
+1.  **Faceted Scatter Plots with Linear Trend Lines (`geom_point` and `geom_smooth`):** To visualize the bivariate relationship between debut year and 2020 ranking across different artist categories. Scatter plots allow us to inspect data distribution, cluster concentrations, and potential linear trends simultaneously.
+2.  **Faceted Boxplots (`geom_boxplot`):** To examine the distributional spread (median, interquartile range, and outliers) of album rankings across different debut eras and artist structures.
+
+These methods directly address our research question by providing both granular individual-album perspectives and macro-level distributional comparisons.
+
+## Statistical Summary & Model Findings
+
+Before visualizing the relationships, we compute key descriptive statistics for our cleaned dataset, including median ranks and debut year ranges grouped by artist type and gender.
+
+```{r}
+#| label: modeling-summary
+#| message: false
+#| warning: false
+
+# Calculate summary statistics of 2020 rank and debut year by artist type
+rolling_stone_summary <- rolling_stone_clean |>
+  group_by(artist_type) |>
+  summarise(
+    album_count = n(),
+    mean_debut_year = mean(debut_album_release_year, na.rm = TRUE),
+    median_rank_2020 = median(rank_2020, na.rm = TRUE),
+    iqr_rank_2020 = IQR(rank_2020, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# Display summary table nicely in Quarto
+knitr::kable(
+  rolling_stone_summary,
+  col.names = c("Artist Type", "Number of Albums", "Mean Debut Year", "Median 2020 Rank", "Rank IQR"),
+  caption = "Summary Statistics of 2020 Rolling Stone Rankings by Artist Group Structure"
+)
+```
+
+As detailed in the table above, the dataset comprises **`r nrow(rolling_stone_clean)`** total ranked album observations after listwise deletion of missing values. Solo artists and bands exhibit distinct distributional properties across the 2020 ranking spectrum.
+
+## Visualizing Career Longevity and Critical Acclaim
+
+To examine the core relationship between an artist's career debut year and their 2020 critical ranking, we construct a faceted scatter plot with OLS trend lines.
+
+```{r}
+#| label: fig-debut-vs-rank
+#| fig-cap: "Relationship between Artist Debut Year and 2020 Rolling Stone Album Rank, faceted by Artist Group Structure and Gender."
+#| message: false
+#| warning: false
+
+# Generate scatter plot exploring debut year vs 2020 rank faceted by artist type and gender
+ggplot(rolling_stone_clean, aes(x = debut_album_release_year, y = rank_2020, color = artist_gender)) +
+  geom_point(alpha = 0.6, size = 2) +
+  geom_smooth(method = "lm", se = FALSE, linewidth = 1) +
+  facet_wrap(~ artist_type) +
+  labs(
+    title = "2020 Rolling Stone Album Rank vs. Artist Debut Year",
+    subtitle = "Examining whether earlier debut eras correlate with higher critical rankings",
+    x = "Debut Album Release Year",
+    y = "2020 Rolling Stone Rank (Lower = Higher Acclaim)",
+    color = "Artist Gender"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    legend.position = "bottom",
+    plot.title = element_text(face = "bold", size = 14),
+    strip.text = element_text(face = "bold", size = 11)
+  )
+```
+
+### Interpretation of Visual Findings
+
+1.  **Clustering Around Legacy Eras:** As illustrated in @fig-debut-vs-rank, artist debut years are heavily concentrated between the mid-1960s and the late 1980s. This reflects the historical bias of canonical music criticism toward classic rock and formative pop/hip-hop eras.
+2.  **Trend Line Analysis:** The linear smoothing lines (`geom_smooth`) indicate relatively flat or mildly sloping trajectories across most facets. Specifically, there is no overwhelming empirical evidence that artists who debuted earlier (e.g., the 1950s) universally command top-tier rankings (ranks closer to 1) compared to those who debuted in the 1970s or 1980s.
+3.  **Gender and Group Structure Variations:** When faceted by `artist_type` (Solo Artist vs. Band / Group), bands and groups display a dense concentration of classic rock acts originating from the 1960s and 1970s. Solo artists span a broader temporal distribution, including earlier jazz and blues pioneers as well as modern pop and hip-hop solo acts.
