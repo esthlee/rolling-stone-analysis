@@ -147,6 +147,7 @@ The R code chunk below executes our complete data processing pipeline. In line w
 
 ```{r}
 #| label: data-processing
+#| echo: false
 #| message: false
 #| warning: false
 
@@ -214,6 +215,7 @@ Before visualizing the relationships, we compute key descriptive statistics for 
 
 ```{r}
 #| label: modelling-summary
+#| echo: false
 #| message: false
 #| warning: false
 
@@ -244,6 +246,7 @@ To examine the core relationship between an artist's career debut year and their
 
 ```{r}
 #| label: fig-debut-vs-rank
+#| echo: false
 #| fig-cap: "Relationship between Artist Debut Year and 2020 Rolling Stone Album Rank, faceted by Artist Group Structure and colored by Gender Composition."
 #| message: false
 #| warning: false
