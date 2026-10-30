@@ -1,7 +1,9 @@
 ---
 title: "Rolling Stone Music Data Analysis Report"
 author: "Esther Lee"
-format: html
+format:
+  html:
+    embed-resources: true
 editor: visual
 ---
 
@@ -27,7 +29,7 @@ Understanding what historical factors relate to an album's long-term critical ac
 
 To explore these dynamics, this project addresses the following primary research question using a single aspect of the Rolling Stone 2020 dataset:
 
-> **"Is there a measurable pattern or correlation between the year an artist debuted (`debut_album_release_year`) and their 2020 Rolling Stone album ranking (`rank_2020`), and how does this relationship vary across artist gender or member count (`artist_member_count`)?"**
+> **"Is there a measurable pattern or correlation between the year an artist debuted (`debut_album_release_year`) and their 2020 Rolling Stone album ranking (`rank_2020`), and how does this relationship vary across artist gender or group structure (`artist_member_count`)?"**
 
 This question is intentionally narrow and self-contained, designed to be answered entirely through programmatic exploratory data analysis using R (`dplyr` and `ggplot2`) without requiring external domain expertise or supplementary datasets.
 
@@ -47,7 +49,7 @@ To evaluate whether this investigation successfully fulfills its primary objecti
 
 1.  **Analytical Success Criteria:**
     - Successfully clean, filter, and process the dataset to extract valid pairs of `debut_album_release_year`, `rank_2020`, `artist_gender`, and `artist_member_count`.
-    - Produce clear, non-redundant visualizations (e.g., scatter plots with trend lines, faceted boxplots) and summary statistics that directly characterize the correlation (or lack thereof) between debut year and 2020 rank across different gender and member count groupings.
+    - Produce clear, non-redundant visualizations (e.g., scatter plots with trend lines) and summary statistics that directly characterize the correlation (or lack thereof) between debut year and 2020 rank across different gender and group structure categories.
     - Deliver an unambiguous interpretation of the statistical and visual findings addressing the core research question.
 2.  **Technical & Reproducibility Success Criteria:**
     - Construct a fully reproducible programmatic data pipeline using R, `dplyr`, `ggplot2`, Quarto, and Git.
@@ -75,9 +77,10 @@ Before performing any data transformations, we inspect the raw structure and dim
 To answer our specific research question regarding the relationship between an artist's debut year, their 2020 ranking, gender, and group member count, we focus on the following key variables:
 
 | Variable Name | Data Type | Description & Domain |
-|:---------------------|:------------------|:-------------------------------|
+|:----------------------|:-----------------|:-------------------------------|
 | `rank_2020` | Integer | The primary outcome variable representing the album's rank on the 2020 list (1 to 500, where 1 represents the highest acclaim). |
 | `debut_album_release_year` | Integer | The year the artist released their very first debut album (proxy for career longevity). |
+| `release_year` | Integer | The year the ranked album itself was released (used to validate the debut year). |
 | `artist_gender` | Categorical (Character) | The demographic classification of the primary artist (e.g., Male, Female, Male/Female). |
 | `artist_member_count` | Numeric/Integer | The total number of members in the performing act (1 for solo artists, $\ge 2$ for bands/groups). |
 | `album` | Character | Title of the album (used for identification and sanity checks). |
@@ -89,19 +92,19 @@ A preliminary programmatic audit of the raw dataset reveals several critical dat
 
 1.  **Missing Debut Album Release Years (`debut_album_release_year`):**
     - **Data Finding:** A small portion of the entries contains missing values (`NA`) in the `debut_album_release_year` column.
-    - **Impact:** Because `debut_album_release_year` is a core explanatory variable in our research question, albums with missing debut years cannot be plotted on timeline trendlines or included in correlation analyses without imputing or dropping them.
+    - **Impact:** Because `debut_album_release_year` is a core explanatory variable in our research question, albums with missing debut years cannot be plotted on timeline trend lines or included in correlation analyses without imputing or dropping them.
 2.  **Missing Demographics (`artist_gender` and `artist_member_count`):**
     - **Data Finding:** Certain rows lack explicit labels for `artist_gender` or have missing values in `artist_member_count`.
     - **Impact:** Missing gender or member count data restricts our ability to facet visualizations accurately across artist demographics.
 3.  **Potential Discrepancies between Album Release Year and Debut Album Release Year:**
-    - **Data Finding:** In logical data validation, an artist's debut album release year (`debut_album_release_year`) should logically occur on or before the release year of the ranked album (`release_year`). Any entry where `debut_album_release_year > release_year` represents an erroneous data entry.
-    - **Impact:** Such anomalies must be flagged during data preparation to avoid negative career longevity calculations.
+    - **Data Finding:** Logically, an artist's debut album release year (`debut_album_release_year`) should occur on or before the release year of the ranked album (`release_year`). Any entry where `debut_album_release_year > release_year` would represent an erroneous data entry.
+    - **Impact:** Such anomalies would distort any analysis of career longevity, so we check for them explicitly during data preparation.
 4.  **Distributional Characteristics:**
     - Ranking variables (`rank_2020`) span up to 500 for the ranked subset, but debut release years are heavily clustered around the late 1960s to 1990s (the "golden era" of classic album releases).
 
 ## Implications for Downstream Data Processing & Evaluation
 
-The data quality issues identified during this Data Understanding phase directly dictate our technical roadmap for the Data Preparation and Modelling phases:
+The data quality issues identified during this Data Understanding phase directly dictate our technical roadmap for the Data Preparation and Modeling phases:
 
 - **Filtering Strategy (Listwise Deletion vs. Retention):** Rather than dropping incomplete rows across the entire 21-variable dataset, we will apply targeted filtering using `dplyr::filter(!is.na(...))` specifically on the subset of variables relevant to our research question (`rank_2020`, `debut_album_release_year`, `artist_gender`, `artist_member_count`).
 - **Transparency & Caveats:** The removal of rows with missing debut years or missing gender categories will slightly reduce our total sample size from $N = 500$. In the Evaluation phase, we must explicitly acknowledge this sample reduction and evaluate whether it introduces any demographic selection bias.
@@ -111,7 +114,7 @@ The data quality issues identified during this Data Understanding phase directly
 
 ## Overview of the Data Processing Pipeline
 
-To address our research question regarding the relationship between an artist's debut year (`debut_album_release_year`) and their 2020 Rolling Stone album ranking (`rank_2020`), across artist gender and group size (`artist_member_count`), we must transform the raw dataset into a clean, focused analytical subset.
+To address our research question regarding the relationship between an artist's debut year (`debut_album_release_year`) and their 2020 Rolling Stone album ranking (`rank_2020`), across artist gender and group structure (`artist_member_count`), we must transform the raw dataset into a clean, focused analytical subset.
 
 In accordance with reproducible data science practices, all data cleaning, filtering, and feature engineering steps are executed programmatically within our Quarto pipeline using `tidyverse` (`dplyr`) packages.
 
@@ -132,6 +135,11 @@ In accordance with reproducible data science practices, all data cleaning, filte
 
 - **Action:** We mutate the numeric `artist_member_count` variable to create a categorical indicator (`artist_type`), distinguishing between "Solo Artist" (`artist_member_count == 1`) and "Band / Group" (`artist_member_count > 1`).
 - **Rationale:** Categorizing member count simplifies multi-variable visual comparisons in `ggplot2`, allowing us to evaluate whether critical acclaim differs systematically between solo performers and multi-member groups across different debut eras.
+
+### 4. Selecting Relevant Variables
+
+- **Action:** We use `select()` to keep only the variables needed for this research question: `album`, `clean_name`, `rank_2020`, `debut_album_release_year`, `release_year`, `artist_gender`, `artist_member_count`, and `artist_type`.
+- **Rationale:** Dropping the remaining columns keeps the analytical dataset focused and easier to inspect, while retaining `release_year` allows us to validate the debut year values.
 
 ## Reproducible Data Processing Code
 
@@ -169,28 +177,34 @@ rolling_stone_clean <- rolling_stone_data |>
     artist_type
   )
 
-# Preview the dimensions of the cleaned dataset
+# Count the observations in the cleaned dataset
 processed_obs_count <- nrow(rolling_stone_clean)
+
+# Validation: count albums whose artist debut year is later than the album's own release year
+invalid_debut_count <- sum(
+  rolling_stone_clean$debut_album_release_year > rolling_stone_clean$release_year,
+  na.rm = TRUE
+)
 ```
 
-After executing this processing pipeline, our refined dataset contains **`r processed_obs_count`** complete album observations ready for exploratory data analysis and visualisation.
+After executing this processing pipeline, our refined dataset contains **`r processed_obs_count`** complete album observations ready for exploratory data analysis and visualization. The validation check found **`r invalid_debut_count`** album(s) where the debut year is later than the album's release year.
 
-# Modeling / Analysis
+# Modeling & Analysis
 
 ## Analytical Methods & Rationale
 
-To investigate our research question—**"Is there a measurable pattern or correlation between the year an artist debuted (`debut_album_release_year`) and their 2020 Rolling Stone album ranking (`rank_2020`), and how does this relationship vary across artist gender or group structure (`artist_type`)?"**—we employ a combination of descriptive summary statistics and exploratory data visualisations using `ggplot2`.
+To investigate our research question—**"Is there a measurable pattern or correlation between the year an artist debuted (`debut_album_release_year`) and their 2020 Rolling Stone album ranking (`rank_2020`), and how does this relationship vary across artist gender or group structure (`artist_type`, derived from `artist_member_count`)?"**—we employ a combination of descriptive summary statistics and exploratory data visualizations using `ggplot2`.
 
 Specifically, we utilize:
 
-1.  **Faceted Scatter Plots with Linear Trend Lines (`geom_point` and `geom_smooth`):** To visualize the bivariate relationship between debut year and 2020 ranking across different artist categories. Scatter plots allow us to inspect data distribution, cluster concentrations, and potential linear trends simultaneously.
-2.  **Faceted Boxplots (`geom_boxplot`):** To examine the distributional spread (median, interquartile range, and outliers) of album rankings across different debut eras and artist structures.
+1.  **Descriptive Summary Statistics (`group_by()` and `summarise()`):** To compare the number of albums, mean debut year, median rank, and rank spread (interquartile range) between solo artists and bands/groups.
+2.  **Faceted Scatter Plots with Linear Trend Lines (`geom_point` and `geom_smooth`):** To visualize the bivariate relationship between debut year and 2020 ranking across different artist categories. Scatter plots allow us to inspect data distribution, cluster concentrations, and potential linear trends simultaneously.
 
-These methods directly address our research question by providing both granular individual-album perspectives and macro-level distributional comparisons.
+These methods directly address our research question by providing both group-level numerical summaries and granular individual-album perspectives.
 
 ## Statistical Summary & Model Findings
 
-Before visualizing the relationships, we compute key descriptive statistics for our cleaned dataset, including median ranks and debut year ranges grouped by artist type and gender.
+Before visualizing the relationships, we compute key descriptive statistics for our cleaned dataset, including the number of albums, mean debut year, and median rank grouped by artist type.
 
 ```{r}
 #| label: modeling-summary
@@ -216,7 +230,7 @@ knitr::kable(
 )
 ```
 
-As detailed in the table above, the dataset comprises **`r nrow(rolling_stone_clean)`** total ranked album observations after listwise deletion of missing values. Solo artists and bands exhibit distinct distributional properties across the 2020 ranking spectrum.
+As detailed in the table above, the dataset comprises **`r processed_obs_count`** total ranked album observations after listwise deletion of missing values. Solo artists and bands exhibit distinct distributional properties across the 2020 ranking spectrum.
 
 ## Visualizing Career Longevity and Critical Acclaim
 
@@ -224,11 +238,11 @@ To examine the core relationship between an artist's career debut year and their
 
 ```{r}
 #| label: fig-debut-vs-rank
-#| fig-cap: "Relationship between Artist Debut Year and 2020 Rolling Stone Album Rank, faceted by Artist Group Structure and Gender."
+#| fig-cap: "Relationship between Artist Debut Year and 2020 Rolling Stone Album Rank, faceted by Artist Group Structure and colored by Gender."
 #| message: false
 #| warning: false
 
-# Generate scatter plot exploring debut year vs 2020 rank faceted by artist type and gender
+# Generate scatter plot exploring debut year vs 2020 rank, faceted by artist type and colored by gender
 ggplot(rolling_stone_clean, aes(x = debut_album_release_year, y = rank_2020, color = artist_gender)) +
   geom_point(alpha = 0.6, size = 2) +
   geom_smooth(method = "lm", se = FALSE, linewidth = 1) +
