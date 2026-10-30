@@ -267,3 +267,37 @@ ggplot(rolling_stone_clean, aes(x = debut_album_release_year, y = rank_2020, col
 1.  **Clustering Around Legacy Eras:** As illustrated in @fig-debut-vs-rank, artist debut years are heavily concentrated between the mid-1960s and the late 1980s. This reflects the historical bias of canonical music criticism toward classic rock and formative pop/hip-hop eras.
 2.  **Trend Line Analysis:** The linear smoothing lines (`geom_smooth`) indicate relatively flat or mildly sloping trajectories across most facets. Specifically, there is no overwhelming empirical evidence that artists who debuted earlier (e.g., the 1950s) universally command top-tier rankings (ranks closer to 1) compared to those who debuted in the 1970s or 1980s.
 3.  **Gender and Group Structure Variations:** When faceted by `artist_type` (Solo Artist vs. Band / Group), bands and groups display a dense concentration of classic rock acts originating from the 1960s and 1970s. Solo artists span a broader temporal distribution, including earlier jazz and blues pioneers as well as modern pop and hip-hop solo acts.
+
+# Evaluation
+
+## Interpretation of Results in the Context of the Research Question
+
+Our primary research question sought to determine whether a measurable pattern or correlation exists between an artist's career debut year (`debut_album_release_year`) and their 2020 Rolling Stone album ranking (`rank_2020`), and how this relationship varies across artist gender and group structure (`artist_type`).
+
+The exploratory data analysis and visualizations yield **inconclusive evidence of a direct linear correlation** between career longevity (proxied by debut year) and critical rank:
+
+- **Absence of a Strong Temporal Gradient:** As observed in @fig-debut-vs-rank, the OLS trend lines across artist types and gender categories remain relatively flat. Artists originating from earlier decades do not systematically occupy the top-tier ranks (near rank 1) any more than those from subsequent decades.
+- **Clustering Phenomenon:** Critical acclaim within the 2020 Rolling Stone list is heavily concentrated among acts debuting between the mid-1960s and late 1980s. This reflects institutional curation biases within canonical music journalism toward the "classic album" era rather than a uniform distribution across music history.
+
+## Evaluation Against Success Criteria
+
+Reviewing the success criteria established in the Business Understanding phase:
+
+1.  **Analytical Success Criteria:** **Achieved.** We successfully cleaned and filtered the raw dataset, handling missing values transparently through listwise deletion. We produced non-redundant visualizations (faceted scatter plots) and descriptive summary statistics that explicitly characterize the relationship between debut year and 2020 rank across artist structures.
+2.  **Technical & Reproducibility Success Criteria:** **Achieved.** The entire pipeline was constructed programmatically using R, `tidyverse`, `dplyr`, and `ggplot2` within a Quarto document, ensuring complete reproducibility without manual interventions or hard-coded file paths.
+
+## Reliability, Limitations, and Potential Biases
+
+To maintain scientific rigor, we must critically evaluate the reliability of our findings and acknowledge several inherent limitations:
+
+- **Sample Attrition & Missing Data:** Listwise deletion of observations with missing debut years or demographic labels reduced the total dataset size from $N = 500$ ranked albums to our final analytical subset. While robust for exploratory visualization, this attrition introduces a minor risk of demographic selection bias if missingness is non-random (e.g., historical or non-Western artists lacking standardized discography metadata).
+- **Selection Bias in Canonical Rankings:** The Rolling Stone "500 Greatest Albums" list represents subjective critical consensus rather than objective commercial success or universal musical value. The historical dominance of Western rock, pop, and male-fronted bands from the 1960s–1980s shapes the temporal distribution, meaning our findings reflect critical canonization trends rather than absolute industry-wide patterns.
+- **Confounding Variables:** Our simplified binary categorization of `artist_type` (Solo Artist vs. Band / Group) and gender groups does not account for genre differences (e.g., electronic music vs. classical or hip-hop), production eras, or commercial scale, which may act as confounding factors influencing critical placement.
+
+## Scope for Future Improvements
+
+If this investigation were extended or refined in future iterations, several methodological enhancements could be implemented:
+
+1.  **Longitudinal Ranking Comparison:** Expanding the analysis to compare the 2003, 2012, and 2020 Rolling Stone rankings dynamically to evaluate whether critical perception of older versus newer debut eras has shifted over time.
+2.  **Multivariate Regression Modeling:** Moving beyond descriptive visualizations to fit formal regression models (e.g., Generalized Additive Models or OLS regression with interaction terms) to test the statistical significance of debut year while controlling for genre, gender, and group size.
+3.  **Enhanced Demographic Granularity:** Incorporating more detailed genre metadata and broader demographic classifications to better understand intersectional representation in music criticism.
