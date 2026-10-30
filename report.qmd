@@ -45,11 +45,11 @@ To ground this data investigation in a practical context, we define our hypothet
 
 ## Success Criteria
 
-To evaluate whether this investigation successfully fulfills its primary objectives, the project establishes the following success criteria:
+To evaluate whether this investigation successfully fulfils its primary objectives, the project establishes the following success criteria:
 
 1.  **Analytical Success Criteria:**
     - Successfully clean, filter, and process the dataset to extract valid pairs of `debut_album_release_year`, `rank_2020`, `artist_gender`, and `artist_member_count`.
-    - Produce clear, non-redundant visualizations (e.g., scatter plots with trend lines) and summary statistics that directly characterize the correlation (or lack thereof) between debut year and 2020 rank across different gender and group structure categories.
+    - Produce clear, non-redundant visualisations (e.g., scatter plots with trend lines) and summary statistics that directly characterise the correlation (or lack thereof) between debut year and 2020 rank across different gender and group structure categories.
     - Deliver an unambiguous interpretation of the statistical and visual findings addressing the core research question.
 2.  **Technical & Reproducibility Success Criteria:**
     - Construct a fully reproducible programmatic data pipeline using R, `dplyr`, `ggplot2`, Quarto, and Git.
@@ -95,7 +95,7 @@ A preliminary programmatic audit of the raw dataset reveals several critical dat
     - **Impact:** Because `debut_album_release_year` is a core explanatory variable in our research question, albums with missing debut years cannot be plotted on timeline trend lines or included in correlation analyses without imputing or dropping them.
 2.  **Missing Demographics (`artist_gender` and `artist_member_count`):**
     - **Data Finding:** Certain rows lack explicit labels for `artist_gender` or have missing values in `artist_member_count`.
-    - **Impact:** Missing gender or member count data restricts our ability to facet visualizations accurately across artist demographics.
+    - **Impact:** Missing gender or member count data restricts our ability to facet visualisations accurately across artist demographics.
 3.  **Potential Discrepancies between Album Release Year and Debut Album Release Year:**
     - **Data Finding:** Logically, an artist's debut album release year (`debut_album_release_year`) should occur on or before the release year of the ranked album (`release_year`). Any entry where `debut_album_release_year > release_year` would represent an erroneous data entry.
     - **Impact:** Such anomalies would distort any analysis of career longevity, so we check for them explicitly during data preparation.
@@ -104,11 +104,11 @@ A preliminary programmatic audit of the raw dataset reveals several critical dat
 
 ## Implications for Downstream Data Processing & Evaluation
 
-The data quality issues identified during this Data Understanding phase directly dictate our technical roadmap for the Data Preparation and Modeling phases:
+The data quality issues identified during this Data Understanding phase directly dictate our technical roadmap for the Data Preparation and Modelling phases:
 
 - **Filtering Strategy (Listwise Deletion vs. Retention):** Rather than dropping incomplete rows across the entire 21-variable dataset, we will apply targeted filtering using `dplyr::filter(!is.na(...))` specifically on the subset of variables relevant to our research question (`rank_2020`, `debut_album_release_year`, `artist_gender`, `artist_member_count`).
 - **Transparency & Caveats:** The removal of rows with missing debut years or missing gender categories will slightly reduce our total sample size from $N = 500$. In the Evaluation phase, we must explicitly acknowledge this sample reduction and evaluate whether it introduces any demographic selection bias.
-- **Categorization Strategy:** `artist_member_count` will be simplified during Data Preparation into discrete group structures (`artist_type`: "Solo Artist" vs. "Band / Group") to facilitate clear, non-redundant faceting in `ggplot2`.
+- **Categorisation Strategy:** `artist_member_count` will be simplified during Data Preparation into discrete group structures (`artist_type`: "Solo Artist" vs. "Band / Group") to facilitate clear, non-redundant faceting in `ggplot2`.
 
 # Data Preparation
 
@@ -129,9 +129,9 @@ In accordance with reproducible data science practices, all data cleaning, filte
 
 - **Action:** We remove observations containing missing values (`NA`) in our core explanatory and demographic variables: `debut_album_release_year`, `artist_gender`, and `artist_member_count`.
 - **Rationale:** Imputing estimated debut years or guessing artist gender structures for historical musical acts would introduce artificial noise and potential bias into our correlation and group-comparison analyses. Therefore, listwise deletion for these specific variables is the most methodologically sound approach.
-- **Implication & Trade-off:** While this slightly reduces our sample size below $N = 500$, the subset remains robust enough for exploratory visualization and trend analysis. In the Evaluation phase, we must acknowledge this minor attrition when interpreting our findings.
+- **Implication & Trade-off:** While this slightly reduces our sample size below $N = 500$, the subset remains robust enough for exploratory visualisation and trend analysis. In the Evaluation phase, we must acknowledge this minor attrition when interpreting our findings.
 
-### 3. Feature Engineering: Artist Group Structure Categorization
+### 3. Feature Engineering: Artist Group Structure Categorisation
 
 - **Action:** We mutate the numeric `artist_member_count` variable to create a categorical indicator (`artist_type`), distinguishing between "Solo Artist" (`artist_member_count == 1`) and "Band / Group" (`artist_member_count > 1`).
 - **Rationale:** Categorizing member count simplifies multi-variable visual comparisons in `ggplot2`, allowing us to evaluate whether critical acclaim differs systematically between solo performers and multi-member groups across different debut eras.
@@ -193,18 +193,18 @@ invalid_debut_count <- sum(
 )
 ```
 
-After executing this processing pipeline, our refined dataset contains **`r processed_obs_count`** complete album observations ready for exploratory data analysis and visualization. The validation check found **`r invalid_debut_count`** album(s) where the debut year is later than the album's release year.
+After executing this processing pipeline, our refined dataset contains **`r processed_obs_count`** complete album observations ready for exploratory data analysis and visualisation. The validation check found **`r invalid_debut_count`** album(s) where the debut year is later than the album's release year.
 
-# Modeling / Analysis
+# Modelling / Analysis
 
 ## Analytical Methods & Rationale
 
-To investigate our research question—**"Is there a measurable pattern or correlation between the year an artist debuted (`debut_album_release_year`) and their 2020 Rolling Stone album ranking (`rank_2020`), and how does this relationship vary across artist gender or group structure (`artist_type`, derived from `artist_member_count`)?"**—we employ a combination of descriptive summary statistics and exploratory data visualizations using `ggplot2`.
+To investigate our research question—**"Is there a measurable pattern or correlation between the year an artist debuted (`debut_album_release_year`) and their 2020 Rolling Stone album ranking (`rank_2020`), and how does this relationship vary across artist gender or group structure (`artist_type`, derived from `artist_member_count`)?"**—we employ a combination of descriptive summary statistics and exploratory data visualisations using `ggplot2`.
 
 Specifically, we utilize:
 
 1.  **Descriptive Summary Statistics (`group_by()` and `summarise()`):** To compare the number of albums, mean debut year, median rank, and rank spread (interquartile range) between solo artists and bands/groups.
-2.  **Faceted Scatter Plots with Linear Trend Lines (`geom_point` and `geom_smooth`):** To visualize the bivariate relationship between debut year and 2020 ranking across different artist categories. Scatter plots allow us to inspect data distribution, cluster concentrations, and potential linear trends simultaneously.
+2.  **Faceted Scatter Plots with Linear Trend Lines (`geom_point` and `geom_smooth`):** To visualise the bivariate relationship between debut year and 2020 ranking across different artist categories. Scatter plots allow us to inspect data distribution, cluster concentrations, and potential linear trends simultaneously.
 
 These methods directly address our research question by providing both group-level numerical summaries and granular individual-album perspectives.
 
@@ -213,7 +213,7 @@ These methods directly address our research question by providing both group-lev
 Before visualizing the relationships, we compute key descriptive statistics for our cleaned dataset, including the number of albums, mean debut year, and median rank grouped by artist type.
 
 ```{r}
-#| label: modeling-summary
+#| label: modelling-summary
 #| message: false
 #| warning: false
 
@@ -279,7 +279,7 @@ ggplot(rolling_stone_clean, aes(x = debut_album_release_year, y = rank_2020, col
 
 Our primary research question sought to determine whether a measurable pattern or correlation exists between an artist's career debut year (`debut_album_release_year`) and their 2020 Rolling Stone album ranking (`rank_2020`), and how this relationship varies across artist gender and group structure (`artist_type`).
 
-The exploratory data analysis and visualizations yield **inconclusive evidence of a direct linear correlation** between career longevity (proxied by debut year) and critical rank:
+The exploratory data analysis and visualisations yield **inconclusive evidence of a direct linear correlation** between career longevity (proxied by debut year) and critical rank:
 
 - **Absence of a Strong Temporal Gradient:** As observed in @fig-debut-vs-rank, the OLS trend lines across artist types and gender categories remain relatively flat. Artists originating from earlier decades do not systematically occupy the top-tier ranks (near rank 1) any more than those from subsequent decades.
 - **Clustering Phenomenon:** Critical acclaim within the 2020 Rolling Stone list is heavily concentrated among acts debuting between the mid-1960s and late 1980s. This reflects institutional curation biases within canonical music journalism toward the "classic album" era rather than a uniform distribution across music history.
@@ -288,23 +288,23 @@ The exploratory data analysis and visualizations yield **inconclusive evidence o
 
 Reviewing the success criteria established in the Business Understanding phase:
 
-1.  **Analytical Success Criteria:** **Achieved.** We successfully cleaned and filtered the raw dataset, handling missing values transparently through listwise deletion. We produced non-redundant visualizations (faceted scatter plots) and descriptive summary statistics that explicitly characterize the relationship between debut year and 2020 rank across artist structures.
+1.  **Analytical Success Criteria:** **Achieved.** We successfully cleaned and filtered the raw dataset, handling missing values transparently through listwise deletion. We produced non-redundant visualisations (faceted scatter plots) and descriptive summary statistics that explicitly characterise the relationship between debut year and 2020 rank across artist structures.
 2.  **Technical & Reproducibility Success Criteria:** **Achieved.** The entire pipeline was constructed programmatically using R, `tidyverse`, `dplyr`, and `ggplot2` within a Quarto document, ensuring complete reproducibility without manual interventions or hard-coded file paths.
 
 ## Reliability, Limitations, and Potential Biases
 
-To maintain scientific rigor, we must critically evaluate the reliability of our findings and acknowledge several inherent limitations:
+To maintain scientific rigour, we must critically evaluate the reliability of our findings and acknowledge several inherent limitations:
 
-- **Sample Attrition & Missing Data:** Listwise deletion of observations with missing debut years or demographic labels reduced the total dataset size from $N = 500$ ranked albums to our final analytical subset. While robust for exploratory visualization, this attrition introduces a minor risk of demographic selection bias if missingness is non-random (e.g., historical or non-Western artists lacking standardized discography metadata).
+- **Sample Attrition & Missing Data:** Listwise deletion of observations with missing debut years or demographic labels reduced the total dataset size from $N = 500$ ranked albums to our final analytical subset. While robust for exploratory visualisation, this attrition introduces a minor risk of demographic selection bias if missingness is non-random (e.g., historical or non-Western artists lacking standardised discography metadata).
 - **Selection Bias in Canonical Rankings:** The Rolling Stone "500 Greatest Albums" list represents subjective critical consensus rather than objective commercial success or universal musical value. The historical dominance of Western rock, pop, and male-fronted bands from the 1960s–1980s shapes the temporal distribution, meaning our findings reflect critical canonization trends rather than absolute industry-wide patterns.
-- **Confounding Variables:** Our simplified binary categorization of `artist_type` (Solo Artist vs. Band / Group) and gender groups does not account for genre differences (e.g., electronic music vs. classical or hip-hop), production eras, or commercial scale, which may act as confounding factors influencing critical placement.
+- **Confounding Variables:** Our simplified binary categorisation of `artist_type` (Solo Artist vs. Band / Group) and gender groups does not account for genre differences (e.g., electronic music vs. classical or hip-hop), production eras, or commercial scale, which may act as confounding factors influencing critical placement.
 
 ## Scope for Future Improvements
 
 If this investigation were extended or refined in future iterations, several methodological enhancements could be implemented:
 
 1.  **Longitudinal Ranking Comparison:** Expanding the analysis to compare the 2003, 2012, and 2020 Rolling Stone rankings dynamically to evaluate whether critical perception of older versus newer debut eras has shifted over time.
-2.  **Multivariate Regression Modeling:** Moving beyond descriptive visualizations to fit formal regression models (e.g., Generalized Additive Models or OLS regression with interaction terms) to test the statistical significance of debut year while controlling for genre, gender, and group size.
+2.  **Multivariate Regression Modelling:** Moving beyond descriptive visualisations to fit formal regression models (e.g., Generalised Additive Models or OLS regression with interaction terms) to test the statistical significance of debut year while controlling for genre, gender, and group size.
 3.  **Enhanced Demographic Granularity:** Incorporating more detailed genre metadata and broader demographic classifications to better understand intersectional representation in music criticism.
 
 # Deployment / Communication
@@ -315,7 +315,7 @@ Our exploratory data analysis reveals that career longevity (proxied by an artis
 
 1. **Balancing Legacy Catalog Promotions with Modern Spotlights:** Because canonical lists heavily favor classic rock and formative pop eras, curators should avoid relying solely on legacy timelines for editorial playlists. Actively balancing historical classic retrospectives with dedicated spotlights on contemporary and underrepresented debut eras will better engage diverse subscriber demographics.
 2. **Addressing Demographic and Era Representation in Editorial Storytelling:** While our dataset reflects a balanced overall count between solo artists and groups, the density of classic-era entries suggests that curators should remain mindful of potential historical and demographic imbalances (such as the representation of female-led or diverse solo and group acts across decades). Curators can leverage data-driven storytelling to highlight "hidden gems" from underrepresented debut eras and artist categories to enrich the platform's editorial narratives.
-3. **Optimizing Recommendation Algorithms:** Streaming recommendation systems should incorporate chronological and demographic diversity metrics to prevent algorithmic echo chambers that over-index on established classic rock canons.
+3. **Optimising Recommendation Algorithms:** Streaming recommendation systems should incorporate chronological and demographic diversity metrics to prevent algorithmic echo chambers that over-index on established classic rock canons.
 
 ## Executive Summary for Non-Technical Stakeholders
 
