@@ -160,9 +160,15 @@ rolling_stone_clean <- rolling_stone_data |>
   filter(!is.na(artist_gender)) |>
   filter(!is.na(artist_member_count)) |>
 
-  # Step 3: Create categorical artist type to facilitate group comparisons
+  # Step 3: Create categorical artist type and refine gender labels for clarity
   mutate(
-    artist_type = if_else(artist_member_count == 1, "Solo Artist", "Band / Group")
+    artist_type = if_else(artist_member_count == 1, "Solo Artist", "Band / Group"),
+    artist_gender = case_when(
+      artist_gender == "Male" ~ "Male",
+      artist_gender == "Female" ~ "Female",
+      artist_gender == "Male/Female" ~ "Mixed (Male/Female)",
+      TRUE ~ artist_gender
+    )
   ) |>
 
   # Step 4: Select only the variables pertinent to our research question
@@ -189,7 +195,7 @@ invalid_debut_count <- sum(
 
 After executing this processing pipeline, our refined dataset contains **`r processed_obs_count`** complete album observations ready for exploratory data analysis and visualization. The validation check found **`r invalid_debut_count`** album(s) where the debut year is later than the album's release year.
 
-# Modeling & Analysis
+# Modeling / Analysis
 
 ## Analytical Methods & Rationale
 
@@ -211,9 +217,9 @@ Before visualizing the relationships, we compute key descriptive statistics for 
 #| message: false
 #| warning: false
 
-# Calculate summary statistics of 2020 rank and debut year by artist type
+# Calculate summary statistics of 2020 rank and debut year by artist type and gender
 rolling_stone_summary <- rolling_stone_clean |>
-  group_by(artist_type) |>
+  group_by(artist_type, artist_gender) |>
   summarise(
     album_count = n(),
     mean_debut_year = mean(debut_album_release_year, na.rm = TRUE),
@@ -225,8 +231,8 @@ rolling_stone_summary <- rolling_stone_clean |>
 # Display summary table nicely in Quarto
 knitr::kable(
   rolling_stone_summary,
-  col.names = c("Artist Type", "Number of Albums", "Mean Debut Year", "Median 2020 Rank", "Rank IQR"),
-  caption = "Summary Statistics of 2020 Rolling Stone Rankings by Artist Group Structure"
+  col.names = c("Artist Type", "Artist Gender", "Number of Albums", "Mean Debut Year", "Median 2020 Rank", "Rank IQR"),
+  caption = "Summary Statistics of 2020 Rolling Stone Rankings by Artist Group Structure and Gender"
 )
 ```
 
@@ -238,11 +244,10 @@ To examine the core relationship between an artist's career debut year and their
 
 ```{r}
 #| label: fig-debut-vs-rank
-#| fig-cap: "Relationship between Artist Debut Year and 2020 Rolling Stone Album Rank, faceted by Artist Group Structure and colored by Gender."
+#| fig-cap: "Relationship between Artist Debut Year and 2020 Rolling Stone Album Rank, faceted by Artist Group Structure and colored by Gender Composition."
 #| message: false
 #| warning: false
 
-# Generate scatter plot exploring debut year vs 2020 rank, faceted by artist type and colored by gender
 ggplot(rolling_stone_clean, aes(x = debut_album_release_year, y = rank_2020, color = artist_gender)) +
   geom_point(alpha = 0.6, size = 2) +
   geom_smooth(method = "lm", se = FALSE, linewidth = 1) +
@@ -252,7 +257,7 @@ ggplot(rolling_stone_clean, aes(x = debut_album_release_year, y = rank_2020, col
     subtitle = "Examining whether earlier debut eras correlate with higher critical rankings",
     x = "Debut Album Release Year",
     y = "2020 Rolling Stone Rank (Lower = Higher Acclaim)",
-    color = "Artist Gender"
+    color = "Artist Gender Composition"
   ) +
   theme_minimal(base_size = 12) +
   theme(
