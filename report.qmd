@@ -1,0 +1,29 @@
+---
+title: "Rolling Stone Music Data Analysis Report"
+author: "Esther Lee"
+format: html
+editor: visual
+---
+
+## Business Understanding
+
+The primary goal of this investigation is to explore the structural relationship between an artist's career trajectory—specifically, their debut year (`debut_album_release_year`) and active career length—and their critical standing as evaluated by the 2020 Rolling Stone Top 500 Albums ranking (`rank_2020`).
+
+### Stakeholder
+
+The virtual stakeholder for this project is a **popular music critic or a music history research foundation** interested in understanding long-term legacy evaluation in contemporary music history.
+
+### Research Question
+
+> "Is there a measurable pattern or correlation between the year an artist debuted (`debut_album_release_year`) and their 2020 Rolling Stone album ranking (`rank_2020`), and how does this relationship vary across artist gender or member count (`artist_member_count`)?"
+
+### Investigation Objectives & Relevance
+
+- **Historical Evaluation Shifts:** Assess whether pioneering artists from earlier eras dominate the highest echelons of the 2020 ranking, or if contemporary artists secure competitive positions.
+- **Multivariate Influence:** Examine how demographic or structural factors, such as artist gender and group size, interact with career longevity to influence critical acclaim.
+- **Stakeholder Value:** Provide the music history research foundation with data-driven insights into how critical consensus evolves relative to an artist's longevity and era of emergence.
+
+### Success Criteria
+
+- Successfully construct a reproducible analytical pipeline using R (`dplyr`, `ggplot2`) that quantifies the correlation between debut timing and 2020 ranking.
+- Deliver clear multivariate visualizations (e.g., faceted scatter plots) that effectively communicate the moderating effects of gender and member count to a non-technical audience.
