@@ -5,25 +5,51 @@ format: html
 editor: visual
 ---
 
-## Business Understanding
+```{r setup}
+#| include: false
 
-The primary goal of this investigation is to explore the structural relationship between an artist's career trajectory—specifically, their debut year (`debut_album_release_year`) and active career length—and their critical standing as evaluated by the 2020 Rolling Stone Top 500 Albums ranking (`rank_2020`).
+# Load required tidyverse package suite for data manipulation and analysis
+library(tidyverse)
 
-### Stakeholder
+# Load the Rolling Stone dataset into a descriptive data frame
+rolling_stone_data <- read.csv("data/rolling_stone.csv")
+```
 
-The virtual stakeholder for this project is a **popular music critic or a music history research foundation** interested in understanding long-term legacy evaluation in contemporary music history.
+# Business Understanding
 
-### Research Question
+## Project Overview & Background
 
-> "Is there a measurable pattern or correlation between the year an artist debuted (`debut_album_release_year`) and their 2020 Rolling Stone album ranking (`rank_2020`), and how does this relationship vary across artist gender or member count (`artist_member_count`)?"
+The music industry has undergone drastic transformations over the past several decades, evolving from physical vinyl and CD releases to digital downloads and streaming services. In 2020, *Rolling Stone* magazine updated its iconic "500 Greatest Albums of All Time" list (originally published in 2003), attempting to reflect a broader, more modern, and inclusive view of musical history.
 
-### Investigation Objectives & Relevance
+Understanding what historical factors relate to an album's long-term critical acclaim is a key topic of interest within culture and media analytics. Specifically, whether an artist's career longevity (proxied by their debut album release year) correlates with higher critical recognition, and how demographic attributes such as artist gender or group structure (solo artist vs. multi-member bands) modulate this relationship, provides valuable historical and commercial context.
 
-- **Historical Evaluation Shifts:** Assess whether pioneering artists from earlier eras dominate the highest echelons of the 2020 ranking, or if contemporary artists secure competitive positions.
-- **Multivariate Influence:** Examine how demographic or structural factors, such as artist gender and group size, interact with career longevity to influence critical acclaim.
-- **Stakeholder Value:** Provide the music history research foundation with data-driven insights into how critical consensus evolves relative to an artist's longevity and era of emergence.
+## Research Question
 
-### Success Criteria
+To explore these dynamics, this project addresses the following primary research question using a single aspect of the Rolling Stone 2020 dataset:
 
-- Successfully construct a reproducible analytical pipeline using R (`dplyr`, `ggplot2`) that quantifies the correlation between debut timing and 2020 ranking.
-- Deliver clear multivariate visualizations (e.g., faceted scatter plots) that effectively communicate the moderating effects of gender and member count to a non-technical audience.
+> **"Is there a measurable pattern or correlation between the year an artist debuted (`debut_album_release_year`) and their 2020 Rolling Stone album ranking (`rank_2020`), and how does this relationship vary across artist gender or member count (`artist_member_count`)?"**
+
+This question is intentionally narrow and self-contained, designed to be answered entirely through programmatic exploratory data analysis using R (`dplyr` and `ggplot2`) without requiring external domain expertise or supplementary datasets.
+
+## Stakeholder Identification & Value Proposition
+
+To ground this data investigation in a practical context, we define our hypothetical stakeholder as a **Music Archival Specialist and Curator at a Digital Streaming Platform (e.g., Spotify or Apple Music)**.
+
+### Why the Stakeholder Cares:
+
+1.  **Catalog Acquisition & Editorial Curation:** Digital streaming platforms rely heavily on curated retrospective playlists (e.g., "70s Rock Classics", "Pioneering Female Groups") to engage subscribers. Understanding whether critical acclaim heavily favors older debut eras versus newer acts helps curators balance legacy catalog promotions with modern artist spotlights.
+2.  **Identifying Historical Underrepresentation:** Examining how artist gender and group size (`artist_member_count`) interact with debut year and ranking highlights whether certain demographic categories (e.g., female solo artists or larger groups from specific decades) face historical biases or underrepresentation in canonical rankings.
+3.  **Data-Driven Storytelling:** The findings provide empirical narratives for editorial content, feature articles, and algorithmic recommendation systems aiming to highlight hidden gems from underrepresented debut eras.
+
+## Success Criteria
+
+To evaluate whether this investigation successfully fulfills its primary objectives, the project establishes the following success criteria:
+
+1.  **Analytical Success Criteria:**
+    - Successfully clean, filter, and process the dataset to extract valid pairs of `debut_album_release_year`, `rank_2020`, `artist_gender`, and `artist_member_count`.
+    - Produce clear, non-redundant visualizations (e.g., scatter plots with trend lines, faceted boxplots) and summary statistics that directly characterize the correlation (or lack thereof) between debut year and 2020 rank across different gender and member count groupings.
+    - Deliver an unambiguous interpretation of the statistical and visual findings addressing the core research question.
+2.  **Technical & Reproducibility Success Criteria:**
+    - Construct a fully reproducible programmatic data pipeline using R, `dplyr`, `ggplot2`, Quarto, and Git.
+    - Maintain a clean project architecture where the rendered report (`.html`) can be generated automatically from source files without manual intervention or hard-coded file paths.
+    - Provide non-technical explanations alongside code comments, making the analysis fully accessible to non-technical managers and decision-makers.
