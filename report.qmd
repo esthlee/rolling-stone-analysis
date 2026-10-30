@@ -19,7 +19,7 @@ rolling_stone_data <- read.csv("data/rolling_stone.csv")
 
 ## Project Overview & Background
 
-The music industry has undergone drastic transformations over the past several decades, evolving from physical vinyl and CD releases to digital downloads and streaming services. In 2020, *Rolling Stone* magazine updated its iconic "500 Greatest Albums of All Time" list (originally published in 2003), attempting to reflect a broader, more modern, and inclusive view of musical history.
+The music industry has undergone drastic transformations over the past several decades, evolving from physical vinyl and CD releases to digital downloads and streaming services. In 2020, Rolling Stone magazine updated its iconic "500 Greatest Albums of All Time" list (originally published in 2003), attempting to reflect a broader, more modern, and inclusive view of musical history.
 
 Understanding what historical factors relate to an album's long-term critical acclaim is a key topic of interest within culture and media analytics. Specifically, whether an artist's career longevity (proxied by their debut album release year) correlates with higher critical recognition, and how demographic attributes such as artist gender or group structure (solo artist vs. multi-member bands) modulate this relationship, provides valuable historical and commercial context.
 
@@ -33,9 +33,9 @@ This question is intentionally narrow and self-contained, designed to be answere
 
 ## Stakeholder Identification & Value Proposition
 
-To ground this data investigation in a practical context, we define our hypothetical stakeholder as a **Music Archival Specialist and Curator at a Digital Streaming Platform (e.g., Spotify or Apple Music)**.
+To ground this data investigation in a practical context, we define our hypothetical stakeholder as a **Music Archival Specialist and Curator at a Digital Streaming Platform** (e.g., Spotify or Apple Music).
 
-### Why the Stakeholder Cares:
+**Why the Stakeholder Cares:**
 
 1.  **Catalog Acquisition & Editorial Curation:** Digital streaming platforms rely heavily on curated retrospective playlists (e.g., "70s Rock Classics", "Pioneering Female Groups") to engage subscribers. Understanding whether critical acclaim heavily favors older debut eras versus newer acts helps curators balance legacy catalog promotions with modern artist spotlights.
 2.  **Identifying Historical Underrepresentation:** Examining how artist gender and group size (`artist_member_count`) interact with debut year and ranking highlights whether certain demographic categories (e.g., female solo artists or larger groups from specific decades) face historical biases or underrepresentation in canonical rankings.
@@ -58,7 +58,7 @@ To evaluate whether this investigation successfully fulfills its primary objecti
 
 ## Data Collection & Provenance
 
-The primary dataset used in this project is sourced from the *Rolling Stone* 2020 "500 Greatest Albums of All Time" retrospective list, provided via Canvas as `rolling_stone.csv`.
+The primary dataset used in this project is sourced from the Rolling Stone 2020 "500 Greatest Albums of All Time" retrospective list, provided via Canvas as `rolling_stone.csv`.
 
 This dataset aggregates critical evaluations, commercial release metadata, and artist-level demographic variables. To maintain complete technical reproducibility, all raw data is loaded programmatically from the relative file path `data/rolling_stone.csv` without hard-coded local paths.
 
@@ -66,43 +66,111 @@ This dataset aggregates critical evaluations, commercial release metadata, and a
 
 Before performing any data transformations, we inspect the raw structure and dimensions of the dataset:
 
-- **Total Observations (Rows):** 500 rows, corresponding to the 500 ranked albums in the 2020 *Rolling Stone* publication.
-- **Total Variables (Columns):** 21 columns capturing identifiers, ranking history, release dates, music genres, and artist demographic traits.
+- **Total Observations (Rows):** 691 total entries in the raw file, out of which exactly 500 rows correspond to ranked albums in the 2020 Rolling Stone publication (with remaining rows representing unranked or historical entries).
+- **Total Variables (Columns):** 21 columns capturing identifiers, ranking history (`rank_2003`, `rank_2012`, `rank_2020`), release dates, music genres, and artist demographic traits.
 - **Primary Unit of Analysis:** Individual album entries in the 2020 ranking.
 
-### Key Variables for Research Question
+## Key Variables for Research Question
 
 To answer our specific research question regarding the relationship between an artist's debut year, their 2020 ranking, gender, and group member count, we focus on the following key variables:
 
 | Variable Name | Data Type | Description & Domain |
-|:-----------------------|:-----------------------|:-----------------------|
+|:---------------------|:-----------------|:-------------------------------|
 | `rank_2020` | Integer | The primary outcome variable representing the album's rank on the 2020 list (1 to 500, where 1 represents the highest acclaim). |
 | `debut_album_release_year` | Integer | The year the artist released their very first debut album (proxy for career longevity). |
-| `artist_gender` | Categorical (Character) | The demographic classification of the primary artist (e.g., Male, Female, Mixed, Non-binary). |
+| `artist_gender` | Categorical (Character) | The demographic classification of the primary artist (e.g., Male, Female, Male/Female). |
 | `artist_member_count` | Numeric/Integer | The total number of members in the performing act (1 for solo artists, $\ge 2$ for bands/groups). |
 | `album` | Character | Title of the album (used for identification and sanity checks). |
-| `artist` | Character | Name of the artist or group. |
+| `clean_name` | Character | The properly formatted name of the artist or group (replaces generic artist labels). |
 
 ## Data Quality Inspection & Identification of Anomalies
 
 A preliminary programmatic audit of the raw dataset reveals several critical data quality issues and missing values (`NA`s) that must be addressed before analysis:
 
 1.  **Missing Debut Album Release Years (`debut_album_release_year`):**
-    - **Data Finding:** A portion of the entries contains missing values (`NA`) in the `debut_album_release_year` column.
+    - **Data Finding:** A small portion of the entries contains missing values (`NA`) in the `debut_album_release_year` column.
     - **Impact:** Because `debut_album_release_year` is a core explanatory variable in our research question, albums with missing debut years cannot be plotted on timeline trendlines or included in correlation analyses without imputing or dropping them.
 2.  **Missing Demographics (`artist_gender` and `artist_member_count`):**
     - **Data Finding:** Certain rows lack explicit labels for `artist_gender` or have missing values in `artist_member_count`.
     - **Impact:** Missing gender or member count data restricts our ability to facet visualizations accurately across artist demographics.
 3.  **Potential Discrepancies between Album Release Year and Debut Album Release Year:**
-    - **Data Finding:** In logical data validation, an artist's debut album release year (`debut_album_release_year`) should logically occur **on or before** the release year of the ranked album (`release_year`). Any entry where `debut_album_release_year > release_year` represents an erroneous data entry.
+    - **Data Finding:** In logical data validation, an artist's debut album release year (`debut_album_release_year`) should logically occur on or before the release year of the ranked album (`release_year`). Any entry where `debut_album_release_year > release_year` represents an erroneous data entry.
     - **Impact:** Such anomalies must be flagged during data preparation to avoid negative career longevity calculations.
 4.  **Distributional Characteristics:**
-    - Ranking variables (`rank_2020`) are uniformly distributed from 1 to 500, but debut release years are heavily clustered around the late 1960s to 1990s (the "golden era" of classic album releases).
+    - Ranking variables (`rank_2020`) span up to 500 for the ranked subset, but debut release years are heavily clustered around the late 1960s to 1990s (the "golden era" of classic album releases).
 
 ## Implications for Downstream Data Processing & Evaluation
 
-The data quality issues identified during this Data Understanding phase directly dictate our technical roadmap for the **Data Preparation** and **Modelling** phases:
+The data quality issues identified during this Data Understanding phase directly dictate our technical roadmap for the Data Preparation and Modelling phases:
 
 - **Filtering Strategy (Listwise Deletion vs. Retention):** Rather than dropping incomplete rows across the entire 21-variable dataset, we will apply targeted filtering using `dplyr::filter(!is.na(...))` specifically on the subset of variables relevant to our research question (`rank_2020`, `debut_album_release_year`, `artist_gender`, `artist_member_count`).
-- **Transparency & Caveats:** The removal of rows with missing debut years or missing gender categories will slightly reduce our total sample size from $N = 500$. In the Evaluation phase, we must explicitly acknowledge this sample reduction and evaluate whether it introduces any demographic selection bias (e.g., if modern or non-Western artists have a higher rate of missing debut year data).
-- **Categorization Strategy:** `artist_member_count` will be simplified during Data Preparation into discrete group structures (e.g., "Solo Artist" vs. "Band/Group") to facilitate clear, non-redundant faceting in `ggplot2`.
+- **Transparency & Caveats:** The removal of rows with missing debut years or missing gender categories will slightly reduce our total sample size from $N = 500$. In the Evaluation phase, we must explicitly acknowledge this sample reduction and evaluate whether it introduces any demographic selection bias.
+- **Categorization Strategy:** `artist_member_count` will be simplified during Data Preparation into discrete group structures (`artist_type`: "Solo Artist" vs. "Band / Group") to facilitate clear, non-redundant faceting in `ggplot2`.
+
+# Data Preparation
+
+## Overview of the Data Processing Pipeline
+
+To address our research question regarding the relationship between an artist's debut year (`debut_album_release_year`) and their 2020 Rolling Stone album ranking (`rank_2020`), across artist gender and group size (`artist_member_count`), we must transform the raw dataset into a clean, focused analytical subset.
+
+In accordance with reproducible data science practices, all data cleaning, filtering, and feature engineering steps are executed programmatically within our Quarto pipeline using `tidyverse` (`dplyr`) packages.
+
+## Step-by-Step Processing Rationale
+
+### 1. Filtering for the 2020 Ranking Cohort
+
+- **Action:** We filter the dataset to retain only records where `rank_2020` is not missing (`!is.na(rank_2020)`).
+- **Rationale:** The raw dataset aggregates multiple historical rankings (e.g., 2003, 2012, and 2020) totaling 691 observations. Because our research question specifically examines the 2020 publication, filtering out unranked or legacy-only entries ensures our unit of analysis strictly corresponds to the 500 albums featured in the 2020 list.
+
+### 2. Handling Missing Values in Explanatory Variables
+
+- **Action:** We remove observations containing missing values (`NA`) in our core explanatory and demographic variables: `debut_album_release_year`, `artist_gender`, and `artist_member_count`.
+- **Rationale:** Imputing estimated debut years or guessing artist gender structures for historical musical acts would introduce artificial noise and potential bias into our correlation and group-comparison analyses. Therefore, listwise deletion for these specific variables is the most methodologically sound approach.
+- **Implication & Trade-off:** While this slightly reduces our sample size below $N = 500$, the subset remains robust enough for exploratory visualization and trend analysis. In the Evaluation phase, we must acknowledge this minor attrition when interpreting our findings.
+
+### 3. Feature Engineering: Artist Group Structure Categorization
+
+- **Action:** We mutate the numeric `artist_member_count` variable to create a categorical indicator (`artist_type`), distinguishing between "Solo Artist" (`artist_member_count == 1`) and "Band / Group" (`artist_member_count > 1`).
+- **Rationale:** Categorizing member count simplifies multi-variable visual comparisons in `ggplot2`, allowing us to evaluate whether critical acclaim differs systematically between solo performers and multi-member groups across different debut eras.
+
+## Reproducible Data Processing Code
+
+The R code chunk below executes our complete data processing pipeline. In line with coding best practices, each `dplyr` verb performs a distinct operation, preceded by descriptive comments explaining why the step is necessary.
+
+```{r}
+#| label: data-processing
+#| message: false
+#| warning: false
+
+# Construct the processed analytical dataset for the 2020 Rolling Stone ranking
+rolling_stone_clean <- rolling_stone_data |>
+  # Step 1: Retain only albums featured in the 2020 Rolling Stone ranking
+  filter(!is.na(rank_2020)) |>
+
+  # Step 2: Remove rows missing essential variables required for our research question
+  filter(!is.na(debut_album_release_year)) |>
+  filter(!is.na(artist_gender)) |>
+  filter(!is.na(artist_member_count)) |>
+
+  # Step 3: Create categorical artist type to facilitate group comparisons
+  mutate(
+    artist_type = if_else(artist_member_count == 1, "Solo Artist", "Band / Group")
+  ) |>
+
+  # Step 4: Select only the variables pertinent to our research question
+  select(
+    album,
+    clean_name,
+    rank_2020,
+    debut_album_release_year,
+    release_year,
+    artist_gender,
+    artist_member_count,
+    artist_type
+  )
+
+# Preview the dimensions of the cleaned dataset
+processed_obs_count <- nrow(rolling_stone_clean)
+```
+
+After executing this processing pipeline, our refined dataset contains **`r processed_obs_count`** complete album observations ready for exploratory data analysis and visualisation.
