@@ -53,3 +53,56 @@ To evaluate whether this investigation successfully fulfills its primary objecti
     - Construct a fully reproducible programmatic data pipeline using R, `dplyr`, `ggplot2`, Quarto, and Git.
     - Maintain a clean project architecture where the rendered report (`.html`) can be generated automatically from source files without manual intervention or hard-coded file paths.
     - Provide non-technical explanations alongside code comments, making the analysis fully accessible to non-technical managers and decision-makers.
+
+# Data Understanding
+
+## Data Collection & Provenance
+
+The primary dataset used in this project is sourced from the *Rolling Stone* 2020 "500 Greatest Albums of All Time" retrospective list, provided via Canvas as `rolling_stone.csv`.
+
+This dataset aggregates critical evaluations, commercial release metadata, and artist-level demographic variables. To maintain complete technical reproducibility, all raw data is loaded programmatically from the relative file path `data/rolling_stone.csv` without hard-coded local paths.
+
+## Structure & Dimensionality of the Raw Data
+
+Before performing any data transformations, we inspect the raw structure and dimensions of the dataset:
+
+- **Total Observations (Rows):** 500 rows, corresponding to the 500 ranked albums in the 2020 *Rolling Stone* publication.
+- **Total Variables (Columns):** 21 columns capturing identifiers, ranking history, release dates, music genres, and artist demographic traits.
+- **Primary Unit of Analysis:** Individual album entries in the 2020 ranking.
+
+### Key Variables for Research Question
+
+To answer our specific research question regarding the relationship between an artist's debut year, their 2020 ranking, gender, and group member count, we focus on the following key variables:
+
+| Variable Name | Data Type | Description & Domain |
+|:-----------------------|:-----------------------|:-----------------------|
+| `rank_2020` | Integer | The primary outcome variable representing the album's rank on the 2020 list (1 to 500, where 1 represents the highest acclaim). |
+| `debut_album_release_year` | Integer | The year the artist released their very first debut album (proxy for career longevity). |
+| `artist_gender` | Categorical (Character) | The demographic classification of the primary artist (e.g., Male, Female, Mixed, Non-binary). |
+| `artist_member_count` | Numeric/Integer | The total number of members in the performing act (1 for solo artists, $\ge 2$ for bands/groups). |
+| `album` | Character | Title of the album (used for identification and sanity checks). |
+| `artist` | Character | Name of the artist or group. |
+
+## Data Quality Inspection & Identification of Anomalies
+
+A preliminary programmatic audit of the raw dataset reveals several critical data quality issues and missing values (`NA`s) that must be addressed before analysis:
+
+1.  **Missing Debut Album Release Years (`debut_album_release_year`):**
+    - **Data Finding:** A portion of the entries contains missing values (`NA`) in the `debut_album_release_year` column.
+    - **Impact:** Because `debut_album_release_year` is a core explanatory variable in our research question, albums with missing debut years cannot be plotted on timeline trendlines or included in correlation analyses without imputing or dropping them.
+2.  **Missing Demographics (`artist_gender` and `artist_member_count`):**
+    - **Data Finding:** Certain rows lack explicit labels for `artist_gender` or have missing values in `artist_member_count`.
+    - **Impact:** Missing gender or member count data restricts our ability to facet visualizations accurately across artist demographics.
+3.  **Potential Discrepancies between Album Release Year and Debut Album Release Year:**
+    - **Data Finding:** In logical data validation, an artist's debut album release year (`debut_album_release_year`) should logically occur **on or before** the release year of the ranked album (`release_year`). Any entry where `debut_album_release_year > release_year` represents an erroneous data entry.
+    - **Impact:** Such anomalies must be flagged during data preparation to avoid negative career longevity calculations.
+4.  **Distributional Characteristics:**
+    - Ranking variables (`rank_2020`) are uniformly distributed from 1 to 500, but debut release years are heavily clustered around the late 1960s to 1990s (the "golden era" of classic album releases).
+
+## Implications for Downstream Data Processing & Evaluation
+
+The data quality issues identified during this Data Understanding phase directly dictate our technical roadmap for the **Data Preparation** and **Modelling** phases:
+
+- **Filtering Strategy (Listwise Deletion vs. Retention):** Rather than dropping incomplete rows across the entire 21-variable dataset, we will apply targeted filtering using `dplyr::filter(!is.na(...))` specifically on the subset of variables relevant to our research question (`rank_2020`, `debut_album_release_year`, `artist_gender`, `artist_member_count`).
+- **Transparency & Caveats:** The removal of rows with missing debut years or missing gender categories will slightly reduce our total sample size from $N = 500$. In the Evaluation phase, we must explicitly acknowledge this sample reduction and evaluate whether it introduces any demographic selection bias (e.g., if modern or non-Western artists have a higher rate of missing debut year data).
+- **Categorization Strategy:** `artist_member_count` will be simplified during Data Preparation into discrete group structures (e.g., "Solo Artist" vs. "Band/Group") to facilitate clear, non-redundant faceting in `ggplot2`.
