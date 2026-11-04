@@ -47,14 +47,9 @@ To ground this data investigation in a practical context, we define our hypothet
 
 To evaluate whether this investigation successfully fulfils its primary objectives, the project establishes the following success criteria:
 
-1.  **Analytical Success Criteria:**
-    - Successfully clean, filter, and process the dataset to extract valid pairs of `debut_album_release_year`, `rank_2020`, `artist_gender`, and `artist_member_count`.
-    - Produce clear, non-redundant visualisations (e.g., scatter plots with trend lines) and summary statistics that directly characterise the correlation (or lack thereof) between debut year and 2020 rank across different gender and group structure categories.
-    - Deliver an unambiguous interpretation of the statistical and visual findings addressing the core research question.
-2.  **Technical & Reproducibility Success Criteria:**
-    - Construct a fully reproducible programmatic data pipeline using R, `dplyr`, `ggplot2`, Quarto, and Git.
-    - Maintain a clean project architecture where the rendered report (`.html`) can be generated automatically from source files without manual intervention or hard-coded file paths.
-    - Provide non-technical explanations alongside code comments, making the analysis fully accessible to non-technical managers and decision-makers.
+- Successfully clean, filter, and process the dataset to extract valid pairs of `debut_album_release_year`, `rank_2020`, `artist_gender`, and `artist_member_count`.
+- Produce clear, non-redundant visualisations (e.g., scatter plots with trend lines) and summary statistics that directly characterise the correlation (or lack thereof) between debut year and 2020 rank across different gender and group structure categories.
+- Deliver an unambiguous interpretation of the statistical and visual findings addressing the core research question.
 
 # Data Understanding
 
